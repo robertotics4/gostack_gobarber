@@ -16,7 +16,7 @@ usersRouter.post('/', async (request, response) => {
             password,
         });
 
-        const { password: hash, ...userWithoutPassword } = user;
+        const { password: extractedPassword, ...userWithoutPassword } = user;
 
         return response.json(userWithoutPassword);
     } catch (err) {
