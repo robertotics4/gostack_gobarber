@@ -1,41 +1,41 @@
 import { startOfHour } from 'date-fns';
-import { getCustomRepository } from 'typeorm';
+import { injectable, inject } from 'tsyringe';
 
 import AppError from '@shared/errors/AppError';
 
 import Appointment from '@modules/appointments/infra/typeorm/entities/Appointment';
-import AppointmentsRepository from '@modules/appointments/repositories/AppointmentsRepository';
+import IAppointmentsRepository from '../repositories/IAppointmentsRepository';
 
-interface Request {
-    provider_id: string;
-    date: Date;
+interface IRequest {
+  provider_id: string;
+  date: Date;
 }
 
+@injectable()
 class CreateAppointmentService {
-    public async execute({ provider_id, date }: Request): Promise<Appointment> {
-        const appointmentsRepository = getCustomRepository(
-            AppointmentsRepository
-        );
+  constructor(
+    @inject('AppointmentsRepository')
+    private appointmentsRepository: IAppointmentsRepository,
+  ) {}
 
-        const appointmentDate = startOfHour(date);
+  public async execute({ provider_id, date }: IRequest): Promise<Appointment> {
+    const appointmentDate = startOfHour(date);
 
-        const findAppointmentInSameDate = await appointmentsRepository.findByDate(
-            appointmentDate
-        );
+    const findAppointmentInSameDate = await this.appointmentsRepository.findByDate(
+      appointmentDate,
+    );
 
-        if (findAppointmentInSameDate) {
-            throw new AppError('This appointment is already booked');
-        }
-
-        const appointment = appointmentsRepository.create({
-            provider_id,
-            date: appointmentDate,
-        });
-
-        await appointmentsRepository.save(appointment);
-
-        return appointment;
+    if (findAppointmentInSameDate) {
+      throw new AppError('This appointment is already booked');
     }
+
+    const appointment = await this.appointmentsRepository.create({
+      provider_id,
+      date: appointmentDate,
+    });
+
+    return appointment;
+  }
 }
 
 export default CreateAppointmentService;
