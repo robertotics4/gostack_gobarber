@@ -26,7 +26,15 @@
   "rules": {
     "camelcase": "off",
     "no-useless-constructor": "off",
-    "class-methods-use-this": "off",
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "extendDefaults": true,
+        "types": {
+          "{}": false
+        }
+      }
+    ],
     "@typescript-eslint/naming-convention": [
       "error",
       {
